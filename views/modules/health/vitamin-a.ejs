@@ -1,0 +1,68 @@
+<%- include('../../layout-top', { title: 'Vitamin A', active: 'vitamin-a' }) %>
+<div class="page-header">
+  <div><h1>Health Services</h1><div class="breadcrumb">Vitamin A Supplementation</div></div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Record</button>
+</div>
+<div class="health-tabs">
+  <a href="/health/immunization" class="health-tab">Immunization</a>
+  <a href="/health/operation-timbang" class="health-tab">Operation Timbang</a>
+  <a href="/health/vitamin-a" class="health-tab active">Vitamin A</a>
+  <a href="/health/deworming" class="health-tab">Deworming</a>
+  <a href="/health/risk-assessment" class="health-tab">Risk Assessment</a>
+  <a href="/health/family-planning" class="health-tab">Family Planning</a>
+</div>
+<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);max-width:400px;">
+  <div class="stat-card"><div class="stat-label">Given</div><div class="stat-value text-green"><%= stats.total %></div></div>
+  <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value" style="color:orange"><%= stats.pending %></div></div>
+</div>
+<div class="card">
+  <div class="card-header"><h3>Vitamin A Records</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Resident</th><th>Age</th><th>Dosage</th><th>Round</th><th>Year</th><th>Date Given</th><th>Given By</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(records.length===0) { %><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--gray-500);">No records yet.</td></tr><% } %>
+        <% records.forEach(r => { %>
+        <tr>
+          <td><strong><%= r.full_name %></strong></td><td><%= r.age %></td>
+          <td><%= r.dosage %></td><td><%= r.round %></td><td><%= r.year %></td>
+          <td><%= r.date_given ? new Date(r.date_given).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= r.given_by || '-' %></td>
+          <td><span class="badge <%= r.status==='Given'?'badge-success':'badge-warning' %>"><%= r.status %></span></td>
+          <td><form action="/health/vitamin-a/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Add Vitamin A Record</h3><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
+    <form action="/health/vitamin-a" method="POST">
+      <div class="modal-body">
+        <div class="form-group"><label>Resident</label>
+          <select name="resident_id" class="form-select" required><option value="">-- Select --</option>
+            <% residents.forEach(r => { %><option value="<%= r.id %>"><%= r.full_name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Dosage</label>
+            <select name="dosage" class="form-select"><option>100,000 IU</option><option>200,000 IU</option></select>
+          </div>
+          <div class="form-group"><label>Round</label>
+            <select name="round" class="form-select"><option>February Round</option><option>August Round</option></select>
+          </div>
+          <div class="form-group"><label>Year</label><input type="number" name="year" class="form-control" value="<%= new Date().getFullYear() %>" required/></div>
+          <div class="form-group"><label>Date Given</label><input type="date" name="date_given" class="form-control"/></div>
+          <div class="form-group full"><label>Given By</label><input type="text" name="given_by" class="form-control"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../../layout-bottom') %>

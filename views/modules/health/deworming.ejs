@@ -1,0 +1,64 @@
+<%- include('../../layout-top', { title: 'Deworming', active: 'deworming' }) %>
+<div class="page-header">
+  <div><h1>Health Services</h1><div class="breadcrumb">Deworming Program</div></div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Record</button>
+</div>
+<div class="health-tabs">
+  <a href="/health/immunization" class="health-tab">Immunization</a>
+  <a href="/health/operation-timbang" class="health-tab">Operation Timbang</a>
+  <a href="/health/vitamin-a" class="health-tab">Vitamin A</a>
+  <a href="/health/deworming" class="health-tab active">Deworming</a>
+  <a href="/health/risk-assessment" class="health-tab">Risk Assessment</a>
+  <a href="/health/family-planning" class="health-tab">Family Planning</a>
+</div>
+<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);max-width:400px;">
+  <div class="stat-card"><div class="stat-label">Total Dewormed</div><div class="stat-value"><%= stats.total %></div></div>
+  <div class="stat-card"><div class="stat-label">Adverse Reactions</div><div class="stat-value text-danger"><%= stats.reactions %></div></div>
+</div>
+<div class="card">
+  <div class="card-header"><h3>Deworming Records</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Resident</th><th>Age</th><th>Drug</th><th>Dosage</th><th>Round</th><th>Date Given</th><th>Adverse Reaction</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(records.length===0) { %><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--gray-500);">No records yet.</td></tr><% } %>
+        <% records.forEach(r => { %>
+        <tr>
+          <td><strong><%= r.full_name %></strong></td><td><%= r.age %></td>
+          <td><%= r.drug %></td><td><%= r.dosage %></td><td><%= r.round %></td>
+          <td><%= r.date_given ? new Date(r.date_given).toLocaleDateString('en-PH') : '-' %></td>
+          <td><span class="badge <%= r.adverse_reaction==='None'?'badge-success':'badge-warning' %>"><%= r.adverse_reaction %></span></td>
+          <td><form action="/health/deworming/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Add Deworming Record</h3><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
+    <form action="/health/deworming" method="POST">
+      <div class="modal-body">
+        <div class="form-group"><label>Resident</label>
+          <select name="resident_id" class="form-select" required><option value="">-- Select --</option>
+            <% residents.forEach(r => { %><option value="<%= r.id %>"><%= r.full_name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Drug</label><select name="drug" class="form-select"><option>Albendazole</option><option>Mebendazole</option></select></div>
+          <div class="form-group"><label>Dosage</label><select name="dosage" class="form-select"><option>200 mg</option><option>400 mg</option></select></div>
+          <div class="form-group"><label>Round</label><select name="round" class="form-select"><option>1st Round</option><option>2nd Round</option></select></div>
+          <div class="form-group"><label>Date Given</label><input type="date" name="date_given" class="form-control" required/></div>
+          <div class="form-group"><label>Given By</label><input type="text" name="given_by" class="form-control"/></div>
+          <div class="form-group full"><label>Adverse Reaction</label><input type="text" name="adverse_reaction" class="form-control" placeholder="None" value="None"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../../layout-bottom') %>

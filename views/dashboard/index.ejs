@@ -1,0 +1,100 @@
+<%- include('../layout-top', { title: 'Dashboard', active: 'dashboard' }) %>
+
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="breadcrumb">Welcome back, <strong><%= user.name %></strong>!</div>
+  </div>
+  <div style="font-size:12px;color:var(--gray-500);">📅 <span id="today-date"></span></div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Residents</div>
+    <div class="stat-icon-row">
+      <div class="stat-value"><%= stats.totalResidents %></div>
+      <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    </div>
+    <div class="stat-sub">Active registered residents</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Households</div>
+    <div class="stat-icon-row">
+      <div class="stat-value"><%= stats.totalHouseholds %></div>
+      <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    </div>
+    <div class="stat-sub">Registered households</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Immunized (This Month)</div>
+    <div class="stat-icon-row">
+      <div class="stat-value"><%= stats.immunized %></div>
+      <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+    </div>
+    <div class="stat-sub">Unique residents immunized</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Op. Timbang Records</div>
+    <div class="stat-icon-row">
+      <div class="stat-value"><%= stats.timbangRecords %></div>
+      <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></div>
+    </div>
+    <div class="stat-sub">Total weighing records</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Activities</h3>
+      <span style="font-size:12px;color:var(--gray-500);">Latest health service records</span>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Resident</th><th>Service</th><th>Date</th></tr></thead>
+        <tbody>
+          <% if(recentActivity.length === 0) { %>
+            <tr><td colspan="3" style="text-align:center;color:var(--gray-500);padding:24px;">No recent activity found.</td></tr>
+          <% } %>
+          <% recentActivity.forEach(a => { %>
+          <tr>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="avatar" style="width:26px;height:26px;font-size:11px;"><%= a.first_name.charAt(0) %></div>
+                <strong><%= a.last_name %>, <%= a.first_name %></strong>
+              </div>
+            </td>
+            <td><span class="badge badge-info"><%= a.service %></span></td>
+            <td style="font-size:12px;color:var(--gray-500);"><%= a.date ? new Date(a.date).toLocaleDateString('en-PH') : '-' %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card">
+      <div class="card-header"><h3>Health Summary</h3></div>
+      <div class="card-body" style="font-size:13px;display:flex;flex-direction:column;gap:10px;">
+        <div class="flex justify-between"><span class="text-muted">Severely Malnourished</span><span class="fw-600 text-danger"><%= stats.malnourished %></span></div>
+        <div class="flex justify-between"><span class="text-muted">High Risk Residents</span><span class="fw-600" style="color:orange"><%= stats.atRisk %></span></div>
+        <div class="flex justify-between"><span class="text-muted">FP Active Acceptors</span><span class="fw-600 text-green"><%= stats.fpAcceptors %></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>Quick Access</h3></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+        <a href="/health/immunization"     class="btn btn-outline btn-sm" style="justify-content:flex-start;">💉 Immunization</a>
+        <a href="/health/operation-timbang" class="btn btn-outline btn-sm" style="justify-content:flex-start;">⚖️ Operation Timbang</a>
+        <a href="/health/vitamin-a"        class="btn btn-outline btn-sm" style="justify-content:flex-start;">🌟 Vitamin A</a>
+        <a href="/health/deworming"        class="btn btn-outline btn-sm" style="justify-content:flex-start;">💊 Deworming</a>
+        <a href="/health/risk-assessment"  class="btn btn-outline btn-sm" style="justify-content:flex-start;">⚠️ Risk Assessment</a>
+        <a href="/health/family-planning"  class="btn btn-outline btn-sm" style="justify-content:flex-start;">❤️ Family Planning</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});</script>
+<%- include('../layout-bottom') %>

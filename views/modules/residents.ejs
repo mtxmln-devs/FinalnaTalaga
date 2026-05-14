@@ -1,0 +1,87 @@
+<%- include('../layout-top', { title: 'Resident Records', active: 'residents' }) %>
+
+<div class="page-header">
+  <div><h1>Resident Records</h1><div class="breadcrumb">All registered barangay residents · Total: <strong><%= total %></strong></div></div>
+  <button class="btn btn-primary" onclick="openModal('addResidentModal')">+ Add Resident</button>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3>Residents List</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Resident No.</th><th>Full Name</th><th>Age</th><th>Sex</th><th>Purok</th><th>Household</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(residents.length === 0) { %>
+          <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--gray-500);">No residents found. Add one to get started.</td></tr>
+        <% } %>
+        <% residents.forEach(r => { %>
+        <tr>
+          <td><span class="fw-600 text-green"><%= r.resident_no %></span></td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="avatar" style="width:26px;height:26px;font-size:11px;"><%= r.first_name.charAt(0) %></div>
+              <strong><%= r.last_name %>, <%= r.first_name %> <%= r.middle_name ? r.middle_name.charAt(0)+'.' : '' %></strong>
+            </div>
+          </td>
+          <td><%= r.age !== null ? r.age : '-' %></td>
+          <td><%= r.sex %></td>
+          <td><%= r.purok || '-' %></td>
+          <td><% if(r.hh_number) { %><span class="badge badge-secondary"><%= r.hh_number %></span><% } else { %><span style="color:var(--gray-500);font-size:12px;">—</span><% } %></td>
+          <td><span class="badge <%= r.status==='Active'?'badge-success':r.status==='Deceased'?'badge-danger':'badge-secondary' %>"><%= r.status %></span></td>
+          <td>
+            <div class="flex gap-2">
+              <a href="/residents/profile/<%= r.id %>" class="btn btn-outline btn-sm">View</a>
+              <form action="/residents/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this resident?')">
+                <button type="submit" class="btn btn-danger btn-sm">Del</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD RESIDENT MODAL -->
+<div class="modal-overlay" id="addResidentModal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header"><h3>Add New Resident</h3><button class="modal-close" onclick="closeModal('addResidentModal')">✕</button></div>
+    <form action="/residents" method="POST">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group"><label>Resident No.</label><input type="text" name="resident_no" class="form-control" placeholder="RES-001" required/></div>
+          <div class="form-group"><label>Household</label>
+            <select name="household_id" class="form-select">
+              <option value="">-- None --</option>
+              <% households.forEach(h => { %><option value="<%= h.id %>"><%= h.hh_number %> – <%= h.head_name %></option><% }) %>
+            </select>
+          </div>
+          <div class="form-group"><label>Last Name</label><input type="text" name="last_name" class="form-control" required/></div>
+          <div class="form-group"><label>First Name</label><input type="text" name="first_name" class="form-control" required/></div>
+          <div class="form-group"><label>Middle Name</label><input type="text" name="middle_name" class="form-control"/></div>
+          <div class="form-group"><label>Birthdate</label><input type="date" name="birthdate" class="form-control"/></div>
+          <div class="form-group"><label>Sex</label>
+            <select name="sex" class="form-select"><option>Male</option><option>Female</option></select>
+          </div>
+          <div class="form-group"><label>Civil Status</label>
+            <select name="civil_status" class="form-select"><option>Single</option><option>Married</option><option>Widowed</option><option>Separated</option></select>
+          </div>
+          <div class="form-group"><label>Purok</label>
+            <select name="purok" class="form-select"><option>Purok 1</option><option>Purok 2</option><option>Purok 3</option><option>Purok 4</option><option>Purok 5</option></select>
+          </div>
+          <div class="form-group"><label>Occupation</label><input type="text" name="occupation" class="form-control"/></div>
+          <div class="form-group"><label>Religion</label><input type="text" name="religion" class="form-control"/></div>
+          <div class="form-group"><label>PhilHealth No.</label><input type="text" name="philhealth_no" class="form-control"/></div>
+          <div class="form-group full"><label>Complete Address</label><input type="text" name="address" class="form-control"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addResidentModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Resident</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../layout-bottom') %>

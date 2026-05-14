@@ -1,0 +1,113 @@
+<%- include('../layout-top', { title: 'Household Profiling', active: 'household' }) %>
+
+<div class="page-header">
+  <div><h1>Household Profiling</h1><div class="breadcrumb">Manage barangay households</div></div>
+  <button class="btn btn-primary" onclick="openModal('addHHModal')">+ Add Household</button>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+  <div class="stat-card"><div class="stat-label">Total Households</div><div class="stat-value"><%= stats.total %></div></div>
+  <div class="stat-card"><div class="stat-label">Total Members</div><div class="stat-value"><%= stats.members %></div></div>
+  <div class="stat-card"><div class="stat-label">4Ps Beneficiaries</div><div class="stat-value"><%= stats.fourps %></div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3>Household List</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>HH No.</th><th>Head of Household</th><th>Address</th><th>Purok</th><th>Members</th><th>4Ps</th><th>Housing</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(households.length === 0) { %>
+          <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--gray-500);">No households found. Add one to get started.</td></tr>
+        <% } %>
+        <% households.forEach(h => { %>
+        <tr>
+          <td><span class="fw-600 text-green"><%= h.hh_number %></span></td>
+          <td><strong><%= h.head_name %></strong></td>
+          <td style="font-size:12px;"><%= h.address %></td>
+          <td><%= h.purok %></td>
+          <td><span class="badge badge-info"><%= h.member_count %></span></td>
+          <td><span class="badge <%= h.is_4ps?'badge-success':'badge-secondary' %>"><%= h.is_4ps?'Yes':'No' %></span></td>
+          <td style="font-size:12px;"><%= h.housing_type %></td>
+          <td>
+            <div class="flex gap-2">
+              <a href="/household/profile/<%= h.id %>" class="btn btn-outline btn-sm">View</a>
+              <button class="btn btn-secondary btn-sm" onclick="openEditHH(<%= JSON.stringify(h) %>)">Edit</button>
+              <form action="/household/<%= h.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this household?')">
+                <button type="submit" class="btn btn-danger btn-sm">Del</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addHHModal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header"><h3>Add New Household</h3><button class="modal-close" onclick="closeModal('addHHModal')">✕</button></div>
+    <form action="/household" method="POST">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group"><label>Household No.</label><input type="text" name="hh_number" class="form-control" placeholder="HH-001" required/></div>
+          <div class="form-group"><label>Purok</label>
+            <select name="purok" class="form-select"><option>Purok 1</option><option>Purok 2</option><option>Purok 3</option><option>Purok 4</option><option>Purok 5</option></select>
+          </div>
+          <div class="form-group full"><label>Head of Household</label><input type="text" name="head_name" class="form-control" required/></div>
+          <div class="form-group full"><label>Complete Address</label><input type="text" name="address" class="form-control" required/></div>
+          <div class="form-group"><label>Housing Type</label>
+            <select name="housing_type" class="form-select"><option>Owned</option><option>Rented</option><option>Shared</option></select>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:24px;">
+            <input type="checkbox" name="is_4ps" id="is4ps" style="width:16px;height:16px;accent-color:var(--green);"/>
+            <label for="is4ps" style="margin:0;">4Ps Beneficiary</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addHHModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Household</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editHHModal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header"><h3>Edit Household</h3><button class="modal-close" onclick="closeModal('editHHModal')">✕</button></div>
+    <form id="editHHForm" method="POST">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full"><label>Head of Household</label><input type="text" name="head_name" id="eh_head" class="form-control" required/></div>
+          <div class="form-group full"><label>Address</label><input type="text" name="address" id="eh_address" class="form-control" required/></div>
+          <div class="form-group"><label>Purok</label>
+            <select name="purok" id="eh_purok" class="form-select"><option>Purok 1</option><option>Purok 2</option><option>Purok 3</option><option>Purok 4</option><option>Purok 5</option></select>
+          </div>
+          <div class="form-group"><label>Housing Type</label>
+            <select name="housing_type" id="eh_housing" class="form-select"><option>Owned</option><option>Rented</option><option>Shared</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editHHModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditHH(h) {
+  document.getElementById('eh_head').value    = h.head_name;
+  document.getElementById('eh_address').value = h.address;
+  document.getElementById('eh_purok').value   = h.purok;
+  document.getElementById('eh_housing').value = h.housing_type;
+  document.getElementById('editHHForm').action = `/household/${h.id}/edit`;
+  openModal('editHHModal');
+}
+</script>
+<%- include('../layout-bottom') %>

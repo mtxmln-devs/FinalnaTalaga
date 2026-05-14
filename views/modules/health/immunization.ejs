@@ -1,0 +1,79 @@
+<%- include('../../layout-top', { title: 'Immunization', active: 'immunization' }) %>
+<div class="page-header">
+  <div><h1>Health Services</h1><div class="breadcrumb">Immunization Records</div></div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Record</button>
+</div>
+<div class="health-tabs">
+  <a href="/health/immunization" class="health-tab active">Immunization</a>
+  <a href="/health/operation-timbang" class="health-tab">Operation Timbang</a>
+  <a href="/health/vitamin-a" class="health-tab">Vitamin A</a>
+  <a href="/health/deworming" class="health-tab">Deworming</a>
+  <a href="/health/risk-assessment" class="health-tab">Risk Assessment</a>
+  <a href="/health/family-planning" class="health-tab">Family Planning</a>
+</div>
+<div class="stats-grid" style="grid-template-columns:repeat(1,1fr);max-width:200px;">
+  <div class="stat-card"><div class="stat-label">Total Records</div><div class="stat-value"><%= stats.total %></div></div>
+</div>
+<div class="card">
+  <div class="card-header"><h3>Immunization Records</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Resident</th><th>Age</th><th>Vaccine</th><th>Dose</th><th>Date Given</th><th>Next Schedule</th><th>Given By</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(records.length===0) { %><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--gray-500);">No records yet.</td></tr><% } %>
+        <% records.forEach(r => { %>
+        <tr>
+          <td><strong><%= r.full_name %></strong></td>
+          <td><%= r.age %></td>
+          <td><span class="badge badge-info"><%= r.vaccine %></span></td>
+          <td><%= r.dose %></td>
+          <td><%= r.date_given ? new Date(r.date_given).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= r.next_schedule ? new Date(r.next_schedule).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= r.given_by || '-' %></td>
+          <td>
+            <form action="/health/immunization/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this record?')">
+              <button type="submit" class="btn btn-danger btn-sm">Del</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header"><h3>Add Immunization Record</h3><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
+    <form action="/health/immunization" method="POST">
+      <div class="modal-body">
+        <div class="form-group"><label>Resident</label>
+          <select name="resident_id" class="form-select" required>
+            <option value="">-- Select Resident --</option>
+            <% residents.forEach(r => { %><option value="<%= r.id %>"><%= r.full_name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Vaccine</label>
+            <select name="vaccine" class="form-select">
+              <% ['BCG','DPT','Polio','Measles','Hepa B','MMR','Rotavirus','PCV'].forEach(v => { %><option><%= v %></option><% }) %>
+            </select>
+          </div>
+          <div class="form-group"><label>Dose</label>
+            <select name="dose" class="form-select">
+              <option>1st Dose</option><option>2nd Dose</option><option>3rd Dose</option><option>Booster</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Date Given</label><input type="date" name="date_given" class="form-control" required/></div>
+          <div class="form-group"><label>Next Schedule</label><input type="date" name="next_schedule" class="form-control"/></div>
+          <div class="form-group full"><label>Given By</label><input type="text" name="given_by" class="form-control" placeholder="Health worker name"/></div>
+          <div class="form-group full"><label>Remarks</label><input type="text" name="remarks" class="form-control" placeholder="Optional remarks"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../../layout-bottom') %>

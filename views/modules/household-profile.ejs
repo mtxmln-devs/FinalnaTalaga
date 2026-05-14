@@ -1,0 +1,53 @@
+<%- include('../layout-top', { title: 'Household Profile', active: 'household' }) %>
+
+<div class="page-header">
+  <div><h1>Household Profile</h1><div class="breadcrumb"><a href="/household" style="color:var(--green)">Household Profiling</a> › <%= household.hh_number %></div></div>
+  <a href="/household" class="btn btn-secondary btn-sm">← Back</a>
+</div>
+
+<div class="profile-header mb-3">
+  <div style="width:60px;height:60px;background:var(--green);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="28" height="28"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </div>
+  <div>
+    <h2><%= household.head_name %> Household</h2>
+    <p><%= household.address %> · <%= household.purok %> · <%= household.hh_number %></p>
+    <div class="flex gap-2 mt-2">
+      <span class="badge <%= household.is_4ps?'badge-success':'badge-secondary' %>"><%= household.is_4ps?'4Ps Beneficiary':'Non-4Ps' %></span>
+      <span class="badge badge-info"><%= members.length %> Members</span>
+      <span class="badge badge-secondary"><%= household.housing_type %> Housing</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3>Household Members</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>#</th><th>Name</th><th>Sex</th><th>Age</th><th>Civil Status</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(members.length === 0) { %>
+          <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gray-500);">No members found for this household.</td></tr>
+        <% } %>
+        <% members.forEach((m, i) => { %>
+        <tr>
+          <td><%= i+1 %></td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="avatar" style="width:26px;height:26px;font-size:10px;"><%= m.first_name.charAt(0) %></div>
+              <a href="/residents/profile/<%= m.id %>" style="color:var(--green);font-weight:600;"><%= m.last_name %>, <%= m.first_name %></a>
+            </div>
+          </td>
+          <td><%= m.sex %></td>
+          <td><%= m.birthdate ? Math.floor((new Date() - new Date(m.birthdate)) / (365.25*24*60*60*1000)) : '-' %></td>
+          <td><%= m.civil_status %></td>
+          <td><span class="badge <%= m.status==='Active'?'badge-success':'badge-secondary' %>"><%= m.status %></span></td>
+          <td><a href="/residents/profile/<%= m.id %>" class="btn btn-outline btn-sm">View Record</a></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../layout-bottom') %>

@@ -1,0 +1,73 @@
+<%- include('../../layout-top', { title: 'Risk Assessment', active: 'risk-assessment' }) %>
+<div class="page-header">
+  <div><h1>Health Services</h1><div class="breadcrumb">Risk Assessment</div></div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Assessment</button>
+</div>
+<div class="health-tabs">
+  <a href="/health/immunization" class="health-tab">Immunization</a>
+  <a href="/health/operation-timbang" class="health-tab">Operation Timbang</a>
+  <a href="/health/vitamin-a" class="health-tab">Vitamin A</a>
+  <a href="/health/deworming" class="health-tab">Deworming</a>
+  <a href="/health/risk-assessment" class="health-tab active">Risk Assessment</a>
+  <a href="/health/family-planning" class="health-tab">Family Planning</a>
+</div>
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="stat-card"><div class="stat-label">Total Assessed</div><div class="stat-value"><%= stats.total %></div></div>
+  <div class="stat-card"><div class="stat-label">Low Risk</div><div class="stat-value text-green"><%= stats.low %></div></div>
+  <div class="stat-card"><div class="stat-label">Moderate Risk</div><div class="stat-value" style="color:orange"><%= stats.moderate %></div></div>
+  <div class="stat-card"><div class="stat-label">High Risk</div><div class="stat-value text-danger"><%= stats.high %></div></div>
+</div>
+<div class="card">
+  <div class="card-header"><h3>Risk Assessment Records</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Resident</th><th>Category</th><th>Risk Level</th><th>Risk Factors</th><th>Date Assessed</th><th>Next Follow-up</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(records.length===0) { %><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gray-500);">No records yet.</td></tr><% } %>
+        <% records.forEach(r => { %>
+        <tr>
+          <td><strong><%= r.full_name %></strong></td>
+          <td><%= r.category %></td>
+          <td><span class="badge <%= r.risk_level==='Low'?'badge-success':r.risk_level==='Moderate'?'badge-warning':'badge-danger' %>"><%= r.risk_level %> Risk</span></td>
+          <td style="font-size:12px;max-width:160px;"><%= r.risk_factors || '-' %></td>
+          <td><%= r.date_assessed ? new Date(r.date_assessed).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= r.next_followup ? new Date(r.next_followup).toLocaleDateString('en-PH') : '-' %></td>
+          <td><form action="/health/risk-assessment/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header"><h3>Add Risk Assessment</h3><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
+    <form action="/health/risk-assessment" method="POST">
+      <div class="modal-body">
+        <div class="form-group"><label>Resident</label>
+          <select name="resident_id" class="form-select" required><option value="">-- Select --</option>
+            <% residents.forEach(r => { %><option value="<%= r.id %>"><%= r.full_name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Category</label>
+            <select name="category" class="form-select"><option>Hypertension</option><option>Diabetes</option><option>TB</option><option>Maternal</option><option>Heart Disease</option><option>Other</option></select>
+          </div>
+          <div class="form-group"><label>Risk Level</label>
+            <select name="risk_level" class="form-select"><option>Low</option><option>Moderate</option><option>High</option></select>
+          </div>
+          <div class="form-group"><label>Date Assessed</label><input type="date" name="date_assessed" class="form-control" required/></div>
+          <div class="form-group"><label>Next Follow-up</label><input type="date" name="next_followup" class="form-control"/></div>
+          <div class="form-group full"><label>Risk Factors</label><input type="text" name="risk_factors" class="form-control" placeholder="Describe identified risk factors"/></div>
+          <div class="form-group full"><label>Assessed By</label><input type="text" name="assessed_by" class="form-control"/></div>
+          <div class="form-group full"><label>Recommendations</label><textarea name="recommendations" class="form-control" rows="2" placeholder="Health interventions..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../../layout-bottom') %>

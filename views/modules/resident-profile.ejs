@@ -1,0 +1,141 @@
+<%- include('../layout-top', { title: title, active: 'residents' }) %>
+
+<div class="page-header">
+  <div><h1>Resident Profile</h1><div class="breadcrumb"><a href="/residents" style="color:var(--green)">Residents</a> › <%= resident.last_name %>, <%= resident.first_name %></div></div>
+  <div class="flex gap-2">
+    <button class="btn btn-outline btn-sm" onclick="openModal('editResidentModal')">Edit Profile</button>
+    <a href="/residents" class="btn btn-secondary btn-sm">← Back</a>
+  </div>
+</div>
+
+<div class="profile-header mb-3">
+  <div class="profile-avatar"><%= resident.first_name.charAt(0) %><%= resident.last_name.charAt(0) %></div>
+  <div>
+    <h2><%= resident.last_name %>, <%= resident.first_name %> <%= resident.middle_name || '' %></h2>
+    <p><%= resident.resident_no %> · <%= resident.sex %> · <%= resident.age !== null ? resident.age + ' years old' : 'Age unknown' %> · <%= resident.purok || '' %></p>
+    <div class="flex gap-2 mt-2">
+      <span class="badge <%= resident.status==='Active'?'badge-success':'badge-secondary' %>"><%= resident.status %></span>
+      <% if(resident.hh_number) { %><span class="badge badge-info"><%= resident.hh_number %></span><% } %>
+      <% if(resident.is_4ps) { %><span class="badge badge-success">4Ps</span><% } %>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+  <div class="card">
+    <div class="card-header"><h3>Personal Information</h3></div>
+    <div class="card-body">
+      <% const info = [
+        ['Birthdate', resident.birthdate ? new Date(resident.birthdate).toLocaleDateString('en-PH') : '—'],
+        ['Civil Status', resident.civil_status || '—'],
+        ['Occupation', resident.occupation || '—'],
+        ['Religion', resident.religion || '—'],
+        ['PhilHealth No.', resident.philhealth_no || '—'],
+        ['Address', resident.address || '—'],
+      ]; %>
+      <table style="width:100%;">
+        <% info.forEach(([label,val]) => { %>
+        <tr>
+          <td style="font-size:12px;color:var(--gray-500);padding:6px 0;width:42%"><%= label %></td>
+          <td style="font-size:13px;font-weight:500;padding:6px 0;"><%= val %></td>
+        </tr>
+        <% }) %>
+      </table>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="card">
+      <div class="card-header"><h3>Latest BMI</h3></div>
+      <div class="card-body">
+        <% if(timbangRecords.length > 0) { const t = timbangRecords[0]; %>
+        <div style="font-size:32px;font-weight:700;color:var(--green);"><%= t.bmi %></div>
+        <div style="font-size:13px;margin-top:4px;"><span class="badge <%= t.status==='Normal'?'badge-success':t.status==='Underweight'||t.status==='Overweight'?'badge-warning':'badge-danger' %>"><%= t.status %></span></div>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:8px;"><%= t.weight_kg %>kg / <%= t.height_cm %>cm · <%= new Date(t.date_measured).toLocaleDateString('en-PH') %></div>
+        <% } else { %>
+        <div style="color:var(--gray-500);font-size:13px;">No timbang record yet.</div>
+        <% } %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>Health Records</h3></div>
+      <div class="card-body" style="font-size:13px;display:flex;flex-direction:column;gap:8px;">
+        <div class="flex justify-between"><span class="text-muted">Immunizations</span><span class="badge badge-info"><%= immunizations.length %> records</span></div>
+        <div class="flex justify-between"><span class="text-muted">Vitamin A</span><span class="badge badge-info"><%= vitaminA.length %> records</span></div>
+        <div class="flex justify-between"><span class="text-muted">Deworming</span><span class="badge badge-info"><%= deworming.length %> records</span></div>
+        <div class="flex justify-between"><span class="text-muted">Risk Assessments</span><span class="badge <%= riskAssessments.length>0&&riskAssessments[0].risk_level==='High'?'badge-danger':riskAssessments.length>0&&riskAssessments[0].risk_level==='Moderate'?'badge-warning':'badge-info' %>"><%= riskAssessments.length %> records</span></div>
+        <div class="flex justify-between"><span class="text-muted">Family Planning</span><span class="badge badge-info"><%= fp.length %> records</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Immunization Table -->
+<% if(immunizations.length > 0) { %>
+<div class="card mb-3">
+  <div class="card-header"><h3>Immunization Records</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Vaccine</th><th>Dose</th><th>Date Given</th><th>Next Schedule</th><th>Given By</th></tr></thead>
+      <tbody>
+        <% immunizations.forEach(i => { %>
+        <tr>
+          <td><span class="badge badge-info"><%= i.vaccine %></span></td>
+          <td><%= i.dose %></td>
+          <td><%= i.date_given ? new Date(i.date_given).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= i.next_schedule ? new Date(i.next_schedule).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= i.given_by || '-' %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% } %>
+
+<!-- EDIT RESIDENT MODAL -->
+<div class="modal-overlay" id="editResidentModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header"><h3>Edit Resident</h3><button class="modal-close" onclick="closeModal('editResidentModal')">✕</button></div>
+    <form action="/residents/<%= resident.id %>/edit" method="POST">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group"><label>Last Name</label><input type="text" name="last_name" class="form-control" value="<%= resident.last_name %>" required/></div>
+          <div class="form-group"><label>First Name</label><input type="text" name="first_name" class="form-control" value="<%= resident.first_name %>" required/></div>
+          <div class="form-group"><label>Middle Name</label><input type="text" name="middle_name" class="form-control" value="<%= resident.middle_name || '' %>"/></div>
+          <div class="form-group"><label>Birthdate</label><input type="date" name="birthdate" class="form-control" value="<%= resident.birthdate ? resident.birthdate.toISOString().split('T')[0] : '' %>"/></div>
+          <div class="form-group"><label>Sex</label>
+            <select name="sex" class="form-select">
+              <option <%= resident.sex==='Male'?'selected':'' %>>Male</option>
+              <option <%= resident.sex==='Female'?'selected':'' %>>Female</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Civil Status</label>
+            <select name="civil_status" class="form-select">
+              <% ['Single','Married','Widowed','Separated'].forEach(s => { %>
+              <option <%= resident.civil_status===s?'selected':'' %>><%= s %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group"><label>Status</label>
+            <select name="status" class="form-select">
+              <% ['Active','Inactive','Deceased'].forEach(s => { %>
+              <option <%= resident.status===s?'selected':'' %>><%= s %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group"><label>Occupation</label><input type="text" name="occupation" class="form-control" value="<%= resident.occupation || '' %>"/></div>
+          <div class="form-group"><label>Religion</label><input type="text" name="religion" class="form-control" value="<%= resident.religion || '' %>"/></div>
+          <div class="form-group"><label>PhilHealth No.</label><input type="text" name="philhealth_no" class="form-control" value="<%= resident.philhealth_no || '' %>"/></div>
+          <div class="form-group full"><label>Address</label><input type="text" name="address" class="form-control" value="<%= resident.address || '' %>"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('editResidentModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../layout-bottom') %>

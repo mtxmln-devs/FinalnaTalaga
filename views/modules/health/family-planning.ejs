@@ -1,0 +1,81 @@
+<%- include('../../layout-top', { title: 'Family Planning', active: 'family-planning' }) %>
+<div class="page-header">
+  <div><h1>Health Services</h1><div class="breadcrumb">Family Planning</div></div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Record</button>
+</div>
+<div class="health-tabs">
+  <a href="/health/immunization" class="health-tab">Immunization</a>
+  <a href="/health/operation-timbang" class="health-tab">Operation Timbang</a>
+  <a href="/health/vitamin-a" class="health-tab">Vitamin A</a>
+  <a href="/health/deworming" class="health-tab">Deworming</a>
+  <a href="/health/risk-assessment" class="health-tab">Risk Assessment</a>
+  <a href="/health/family-planning" class="health-tab active">Family Planning</a>
+</div>
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="flash flash-error" style="margin:16px 0;">
+    <%= error %>
+  </div>
+<% } %>
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="stat-card"><div class="stat-label">Active Acceptors</div><div class="stat-value"><%= stats.total %></div></div>
+  <div class="stat-card"><div class="stat-label">Modern Method</div><div class="stat-value text-green"><%= stats.modern %></div></div>
+  <div class="stat-card"><div class="stat-label">Natural Method</div><div class="stat-value" style="color:var(--green-dark)"><%= stats.natural %></div></div>
+  <div class="stat-card"><div class="stat-label">Dropouts</div><div class="stat-value text-danger"><%= stats.dropout %></div></div>
+</div>
+<div class="card">
+  <div class="card-header"><h3>Family Planning Records</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Acceptor</th><th>Method</th><th>Type</th><th>Start Date</th><th>Next Visit</th><th>Given By</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(records.length===0) { %><tr><td colspan="8" style="text-align:center;padding:24px;color:var(--gray-500);">No records yet.</td></tr><% } %>
+        <% records.forEach(r => { %>
+        <tr>
+          <td><strong><%= r.full_name %></strong></td>
+          <td><%= r.method %></td>
+          <td><span class="badge <%= r.method_type==='Modern'?'badge-info':'badge-secondary' %>"><%= r.method_type %></span></td>
+          <td><%= r.start_date ? new Date(r.start_date).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= r.next_visit ? new Date(r.next_visit).toLocaleDateString('en-PH') : '-' %></td>
+          <td><%= r.given_by || '-' %></td>
+          <td><span class="badge <%= r.status==='Active'?'badge-success':r.status==='Dropout'?'badge-danger':'badge-secondary' %>"><%= r.status %></span></td>
+          <td><form action="/health/family-planning/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header"><h3>Add Family Planning Record</h3><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
+    <form action="/health/family-planning" method="POST">
+      <div class="modal-body">
+        <div class="form-group"><label>Acceptor (Resident)</label>
+          <select name="resident_id" class="form-select" required><option value="">-- Select --</option>
+            <% residents.forEach(r => { %><option value="<%= r.id %>"><%= r.full_name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Method</label>
+            <select name="method" class="form-select"><option>Pills</option><option>IUD</option><option>Condom</option><option>Injectable</option><option>NFP/LAM</option><option>Implant</option><option>BTL</option><option>Vasectomy</option></select>
+          </div>
+          <div class="form-group"><label>Method Type</label>
+            <select name="method_type" class="form-select"><option>Modern</option><option>Natural</option></select>
+          </div>
+          <div class="form-group"><label>Start Date</label><input type="date" name="start_date" class="form-control" required/></div>
+          <div class="form-group"><label>Next Visit</label><input type="date" name="next_visit" class="form-control"/></div>
+          <div class="form-group"><label>Given By</label><input type="text" name="given_by" class="form-control"/></div>
+          <div class="form-group"><label>Status</label>
+            <select name="status" class="form-select"><option>Active</option><option>Dropout</option><option>Completed</option></select>
+          </div>
+          <div class="form-group full"><label>Remarks</label><input type="text" name="remarks" class="form-control"/></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../../layout-bottom') %>

@@ -1,0 +1,74 @@
+<%- include('../../layout-top', { title: 'Operation Timbang', active: 'timbang' }) %>
+<div class="page-header">
+  <div><h1>Health Services</h1><div class="breadcrumb">Operation Timbang</div></div>
+  <button class="btn btn-primary" onclick="openModal('addModal')">+ Add Record</button>
+</div>
+<div class="health-tabs">
+  <a href="/health/immunization" class="health-tab">Immunization</a>
+  <a href="/health/operation-timbang" class="health-tab active">Operation Timbang</a>
+  <a href="/health/vitamin-a" class="health-tab">Vitamin A</a>
+  <a href="/health/deworming" class="health-tab">Deworming</a>
+  <a href="/health/risk-assessment" class="health-tab">Risk Assessment</a>
+  <a href="/health/family-planning" class="health-tab">Family Planning</a>
+</div>
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="stat-card"><div class="stat-label">Total Weighed</div><div class="stat-value"><%= stats.total %></div></div>
+  <div class="stat-card"><div class="stat-label">Normal</div><div class="stat-value" style="color:var(--green)"><%= stats.normal %></div></div>
+  <div class="stat-card"><div class="stat-label">Underweight</div><div class="stat-value" style="color:orange"><%= stats.underweight %></div></div>
+  <div class="stat-card"><div class="stat-label">Severely Underweight</div><div class="stat-value" style="color:#dc3545"><%= stats.severe %></div></div>
+</div>
+<div class="card">
+  <div class="card-header"><h3>Timbang Records</h3></div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Resident</th><th>Age</th><th>Sex</th><th>Weight</th><th>Height</th><th>BMI</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        <% if(records.length===0) { %><tr><td colspan="9" style="text-align:center;padding:24px;color:var(--gray-500);">No records yet.</td></tr><% } %>
+        <% records.forEach(r => { %>
+        <tr>
+          <td><strong><%= r.full_name %></strong></td>
+          <td><%= r.age %></td><td><%= r.sex %></td>
+          <td><%= r.weight_kg %> kg</td><td><%= r.height_cm %> cm</td><td><%= r.bmi %></td>
+          <td><span class="badge <%= r.status==='Normal'?'badge-success':r.status==='Underweight'||r.status==='Overweight'?'badge-warning':'badge-danger' %>"><%= r.status %></span></td>
+          <td style="font-size:12px;"><%= r.date_measured ? new Date(r.date_measured).toLocaleDateString('en-PH') : '-' %></td>
+          <td>
+            <form action="/health/operation-timbang/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')">
+              <button type="submit" class="btn btn-danger btn-sm">Del</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Add Timbang Record</h3><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
+    <form action="/health/operation-timbang" method="POST">
+      <div class="modal-body">
+        <div class="form-group"><label>Resident</label>
+          <select name="resident_id" class="form-select" required>
+            <option value="">-- Select Resident --</option>
+            <% residents.forEach(r => { %><option value="<%= r.id %>"><%= r.full_name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Weight (kg)</label><input type="number" name="weight_kg" step="0.01" class="form-control" required/></div>
+          <div class="form-group"><label>Height (cm)</label><input type="number" name="height_cm" step="0.01" class="form-control" required/></div>
+          <div class="form-group"><label>Date Measured</label><input type="date" name="date_measured" class="form-control" required/></div>
+          <div class="form-group"><label>Measured By</label><input type="text" name="measured_by" class="form-control"/></div>
+          <div class="form-group full"><label>Remarks</label><input type="text" name="remarks" class="form-control"/></div>
+        </div>
+        <div style="background:var(--green-xlight);border-radius:6px;padding:10px;font-size:12px;color:var(--green-dark);margin-top:8px;">
+          💡 BMI and nutritional status will be <strong>calculated automatically</strong>.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../../layout-bottom') %>
