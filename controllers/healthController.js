@@ -1,9 +1,16 @@
 const db = require('../config/db');
 
 async function getResidents() {
-  const [rows] = await db.query(
-    'SELECT id, CONCAT(last_name, ", ", first_name) AS full_name FROM residents WHERE status="Active" ORDER BY last_name'
-  );
+  const [rows] = await db.query(`
+    SELECT 
+      id,
+      CONCAT(last_name, ', ', first_name) AS full_name
+    FROM residents
+    ORDER BY last_name ASC
+  `);
+
+  console.log(rows);
+
   return rows;
 }
 
@@ -183,29 +190,56 @@ exports.deleteRiskAssessment = async (req, res) => {
 // ─── FAMILY PLANNING ──────────────────────────────────────
 exports.getFamilyPlanning = async (req, res) => {
   try {
+
     const [records] = await db.query(`
       SELECT fp.*, CONCAT(r.last_name,', ',r.first_name) AS full_name,
         TIMESTAMPDIFF(YEAR, r.birthdate, CURDATE()) AS age
-      FROM family_planning fp JOIN residents r ON fp.resident_id = r.id
+      FROM family_planning fp
+      JOIN residents r ON fp.resident_id = r.id
       ORDER BY fp.start_date DESC
     `);
-    const [[{ total }]]   = await db.query('SELECT COUNT(*) AS total FROM family_planning WHERE status="Active"');
-    const [[{ modern }]]  = await db.query('SELECT COUNT(*) AS modern FROM family_planning WHERE method_type="Modern" AND status="Active"');
-    const [[{ natural }]] = await db.query('SELECT COUNT(*) AS natural FROM family_planning WHERE method_type="Natural" AND status="Active"');
-    const [[{ dropout }]] = await db.query('SELECT COUNT(*) AS dropout FROM family_planning WHERE status="Dropout"');
+
+    const [[{ total }]] = await db.query(
+      'SELECT COUNT(*) AS total FROM family_planning WHERE status="Active"'
+    );
+
+    const [[{ modern }]] = await db.query(
+      'SELECT COUNT(*) AS modern FROM family_planning WHERE method_type="Modern" AND status="Active"'
+    );
+
+const [[{ naturalCount }]] = await db.query(
+  'SELECT COUNT(*) AS naturalCount FROM family_planning WHERE method_type="Natural" AND status="Active"'
+);
+
+    const [[{ dropout }]] = await db.query(
+      'SELECT COUNT(*) AS dropout FROM family_planning WHERE status="Dropout"'
+    );
+
     const residents = await getResidents();
-    res.render('modules/health/family-planning', { title:'Family Planning', active:'family-planning', records, residents, stats:{ total, modern, natural, dropout }, error: null });
+
+    res.render('modules/health/family-planning', {
+      title:'Family Planning',
+      active:'family-planning',
+      records,
+      residents,
+      stats:{ total, modern, natural: naturalCount, dropout },
+      error: null
+    });
+
   } catch (err) {
-    console.error(err);
-    // Render the page with an error message instead of redirecting
+
+    console.log("FAMILY PLANNING ERROR:");
+    console.log(err);
+
     res.render('modules/health/family-planning', {
       title: 'Family Planning',
       active: 'family-planning',
       records: [],
       residents: [],
       stats: { total: 0, modern: 0, natural: 0, dropout: 0 },
-      error: 'An error occurred while loading Family Planning data. Please contact the administrator.'
+      error: 'An error occurred while loading Family Planning data.'
     });
+
   }
 };
 

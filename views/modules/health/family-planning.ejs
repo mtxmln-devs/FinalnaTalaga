@@ -50,11 +50,16 @@
     <div class="modal-header"><h3>Add Family Planning Record</h3><button class="modal-close" onclick="closeModal('addModal')">✕</button></div>
     <form action="/health/family-planning" method="POST">
       <div class="modal-body">
-        <div class="form-group"><label>Acceptor (Resident)</label>
-          <select name="resident_id" class="form-select" required><option value="">-- Select --</option>
-            <% residents.forEach(r => { %><option value="<%= r.id %>"><%= r.full_name %></option><% }) %>
-          </select>
-        </div>
+<div class="form-group">
+  <label>Acceptor (Resident)</label>
+  <select name="resident_id" class="form-select" required>
+    <option value="" disabled selected>-- Select Resident --</option>
+    
+    <% residents.forEach(r => { %>
+      <option value="<%= r.id %>"><%= r.full_name %></option>
+    <% }) %>
+  </select>
+</div>
         <div class="form-grid">
           <div class="form-group"><label>Method</label>
             <select name="method" class="form-select"><option>Pills</option><option>IUD</option><option>Condom</option><option>Injectable</option><option>NFP/LAM</option><option>Implant</option><option>BTL</option><option>Vasectomy</option></select>

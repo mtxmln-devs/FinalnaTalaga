@@ -4,13 +4,13 @@ const db = require('../config/db');
 exports.index = async (req, res) => {
   try {
     const [residents] = await db.query(`
-      SELECT r.*, h.hh_number,
-        TIMESTAMPDIFF(YEAR, r.birthdate, CURDATE()) AS age
-      FROM residents r
-      LEFT JOIN households h ON r.household_id = h.id
-      WHERE r.status != 'Deceased'
-      ORDER BY r.last_name ASC
-    `);
+  SELECT r.*, h.hh_number,
+    TIMESTAMPDIFF(YEAR, r.birthdate, CURDATE()) AS age
+  FROM residents r
+  LEFT JOIN households h ON r.household_id = h.id
+WHERE r.status IS NULL OR r.status != 'Deceased'
+  ORDER BY r.last_name ASC
+`);
     const [households] = await db.query('SELECT id, hh_number, head_name FROM households ORDER BY hh_number');
     const [[{ total }]] = await db.query('SELECT COUNT(*) AS total FROM residents WHERE status="Active"');
     res.render('modules/residents', { title: 'Resident Records', active: 'residents', residents, households, total });
@@ -58,14 +58,29 @@ exports.create = async (req, res) => {
           birthdate, sex, civil_status, purok, address, occupation,
           religion, philhealth_no, is_4ps } = req.body;
   try {
-    await db.query(`
-      INSERT INTO residents
-        (resident_no,household_id,last_name,first_name,middle_name,birthdate,
-         sex,civil_status,purok,address,occupation,religion,philhealth_no,is_4ps)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    `, [resident_no, household_id || null, last_name, first_name, middle_name,
-        birthdate, sex, civil_status, purok, address, occupation,
-        religion, philhealth_no, is_4ps === 'on' ? 1 : 0]);
+await db.query(`
+  INSERT INTO residents
+    (resident_no,household_id,last_name,first_name,middle_name,birthdate,
+     sex,civil_status,purok,address,occupation,religion,
+     philhealth_no,is_4ps,status)
+  VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+`, [
+    resident_no,
+    household_id || null,
+    last_name,
+    first_name,
+    middle_name,
+    birthdate,
+    sex,
+    civil_status,
+    purok,
+    address,
+    occupation,
+    religion,
+    philhealth_no,
+    is_4ps === 'on' ? 1 : 0,
+    'Active'
+]);
     req.flash('success', `Resident ${first_name} ${last_name} added.`);
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') req.flash('error', 'Resident number already exists.');
