@@ -29,8 +29,31 @@
           <td><%= r.date_given ? new Date(r.date_given).toLocaleDateString('en-PH') : '-' %></td>
           <td><%= r.given_by || '-' %></td>
           <td><span class="badge <%= r.status==='Given'?'badge-success':'badge-warning' %>"><%= r.status %></span></td>
-          <td><form action="/health/vitamin-a/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form></td>
-        </tr>
+<td>
+  <div class="flex gap-2">
+
+    <button
+      type="button"
+      class="btn btn-outline btn-sm"
+      onclick="openModal('editModal<%= r.id %>')">
+
+      Edit
+
+    </button>
+
+    <form
+      action="/health/vitamin-a/<%= r.id %>?_method=DELETE"
+      method="POST"
+      onsubmit="return confirm('Delete this record?')">
+
+      <button type="submit" class="btn btn-danger btn-sm">
+        Del
+      </button>
+
+    </form>
+
+  </div>
+</td>        </tr>
         <% }) %>
       </tbody>
     </table>
@@ -65,4 +88,174 @@
     </form>
   </div>
 </div>
+<% records.forEach(r => { %>
+
+<div class="modal-overlay" id="editModal<%= r.id %>">
+
+  <div class="modal">
+
+    <div class="modal-header">
+
+      <h3>Edit Vitamin A Record</h3>
+
+      <button class="modal-close"
+        onclick="closeModal('editModal<%= r.id %>')">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <form
+      action="/health/vitamin-a/<%= r.id %>/edit"
+      method="POST">
+
+      <div class="modal-body">
+
+        <div class="form-group">
+
+          <label>Resident</label>
+
+          <select
+            name="resident_id"
+            class="form-select"
+            required>
+
+            <% residents.forEach(res => { %>
+
+              <option
+                value="<%= res.id %>"
+                <%= res.id == r.resident_id ? 'selected' : '' %>>
+
+                <%= res.full_name %>
+
+              </option>
+
+            <% }) %>
+
+          </select>
+
+        </div>
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label>Dosage</label>
+
+            <select name="dosage" class="form-select">
+
+              <option value="100,000 IU"
+                <%= r.dosage === '100,000 IU' ? 'selected' : '' %>>
+
+                100,000 IU
+
+              </option>
+
+              <option value="200,000 IU"
+                <%= r.dosage === '200,000 IU' ? 'selected' : '' %>>
+
+                200,000 IU
+
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Round</label>
+
+            <select name="round" class="form-select">
+
+              <option value="February Round"
+                <%= r.round === 'February Round' ? 'selected' : '' %>>
+
+                February Round
+
+              </option>
+
+              <option value="August Round"
+                <%= r.round === 'August Round' ? 'selected' : '' %>>
+
+                August Round
+
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Year</label>
+
+            <input
+              type="number"
+              name="year"
+              value="<%= r.year %>"
+              class="form-control"
+              required>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Date Given</label>
+
+            <input
+              type="date"
+              name="date_given"
+              value="<%= r.date_given ? r.date_given.toISOString().split('T')[0] : '' %>"
+              class="form-control">
+
+          </div>
+
+          <div class="form-group full">
+
+            <label>Given By</label>
+
+            <input
+              type="text"
+              name="given_by"
+              value="<%= r.given_by || '' %>"
+              class="form-control">
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('editModal<%= r.id %>')">
+
+          Cancel
+
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary">
+
+          Update Record
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+<% }) %>
+
 <%- include('../../layout-bottom') %>

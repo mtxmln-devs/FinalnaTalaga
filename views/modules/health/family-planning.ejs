@@ -38,7 +38,37 @@
           <td><%= r.next_visit ? new Date(r.next_visit).toLocaleDateString('en-PH') : '-' %></td>
           <td><%= r.given_by || '-' %></td>
           <td><span class="badge <%= r.status==='Active'?'badge-success':r.status==='Dropout'?'badge-danger':'badge-secondary' %>"><%= r.status %></span></td>
-          <td><form action="/health/family-planning/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')"><button type="submit" class="btn btn-danger btn-sm">Del</button></form></td>
+<td>
+
+  <div class="flex gap-2">
+
+    <button
+      type="button"
+      class="btn btn-outline btn-sm"
+      onclick="openModal('editModal<%= r.id %>')">
+
+      Edit
+
+    </button>
+
+    <form
+      action="/health/family-planning/<%= r.id %>?_method=DELETE"
+      method="POST"
+      onsubmit="return confirm('Delete this record?')">
+
+      <button
+        type="submit"
+        class="btn btn-danger btn-sm">
+
+        Del
+
+      </button>
+
+    </form>
+
+  </div>
+
+</td>
         </tr>
         <% }) %>
       </tbody>
@@ -83,4 +113,213 @@
     </form>
   </div>
 </div>
+<% records.forEach(r => { %>
+
+<div class="modal-overlay" id="editModal<%= r.id %>">
+
+  <div class="modal" style="max-width:620px;">
+
+    <div class="modal-header">
+
+      <h3>Edit Family Planning Record</h3>
+
+      <button
+        class="modal-close"
+        onclick="closeModal('editModal<%= r.id %>')">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <form
+      action="/health/family-planning/<%= r.id %>/edit"
+      method="POST">
+
+      <div class="modal-body">
+
+        <div class="form-group">
+
+          <label>Resident</label>
+
+          <select
+            name="resident_id"
+            class="form-select"
+            required>
+
+            <% residents.forEach(res => { %>
+
+              <option
+                value="<%= res.id %>"
+                <%= res.id == r.resident_id ? 'selected' : '' %>>
+
+                <%= res.full_name %>
+
+              </option>
+
+            <% }) %>
+
+          </select>
+
+        </div>
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label>Method</label>
+
+            <select
+              name="method"
+              class="form-select">
+
+              <% ['Pills','IUD','Condom','Injectable','NFP/LAM','Implant','BTL','Vasectomy'].forEach(method => { %>
+
+                <option
+                  value="<%= method %>"
+                  <%= r.method === method ? 'selected' : '' %>>
+
+                  <%= method %>
+
+                </option>
+
+              <% }) %>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Method Type</label>
+
+            <select
+              name="method_type"
+              class="form-select">
+
+              <option
+                value="Modern"
+                <%= r.method_type === 'Modern' ? 'selected' : '' %>>
+
+                Modern
+
+              </option>
+
+              <option
+                value="Natural"
+                <%= r.method_type === 'Natural' ? 'selected' : '' %>>
+
+                Natural
+
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Start Date</label>
+
+            <input
+              type="date"
+              name="start_date"
+              value="<%= r.start_date ? r.start_date.toISOString().split('T')[0] : '' %>"
+              class="form-control"
+              required>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Next Visit</label>
+
+            <input
+              type="date"
+              name="next_visit"
+              value="<%= r.next_visit ? r.next_visit.toISOString().split('T')[0] : '' %>"
+              class="form-control">
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Status</label>
+
+            <select
+              name="status"
+              class="form-select">
+
+              <% ['Active','Dropout','Completed'].forEach(stat => { %>
+
+                <option
+                  value="<%= stat %>"
+                  <%= r.status === stat ? 'selected' : '' %>>
+
+                  <%= stat %>
+
+                </option>
+
+              <% }) %>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Given By</label>
+
+            <input
+              type="text"
+              name="given_by"
+              value="<%= r.given_by || '' %>"
+              class="form-control">
+
+          </div>
+
+          <div class="form-group full">
+
+            <label>Remarks</label>
+
+            <textarea
+              name="remarks"
+              class="form-control"
+              rows="3"><%= r.remarks || '' %></textarea>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('editModal<%= r.id %>')">
+
+          Cancel
+
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary">
+
+          Update Record
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+<% }) %>
 <%- include('../../layout-bottom') %>

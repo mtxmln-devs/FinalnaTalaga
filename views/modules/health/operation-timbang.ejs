@@ -31,11 +31,36 @@
           <td><%= r.weight_kg %> kg</td><td><%= r.height_cm %> cm</td><td><%= r.bmi %></td>
           <td><span class="badge <%= r.status==='Normal'?'badge-success':r.status==='Underweight'||r.status==='Overweight'?'badge-warning':'badge-danger' %>"><%= r.status %></span></td>
           <td style="font-size:12px;"><%= r.date_measured ? new Date(r.date_measured).toLocaleDateString('en-PH') : '-' %></td>
-          <td>
-            <form action="/health/operation-timbang/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete?')">
-              <button type="submit" class="btn btn-danger btn-sm">Del</button>
-            </form>
-          </td>
+         <td>
+
+  <div class="flex gap-2">
+
+    <button
+      type="button"
+      class="btn btn-outline btn-sm"
+      onclick="openModal('editModal<%= r.id %>')">
+
+      Edit
+
+    </button>
+
+    <form
+      action="/health/operation-timbang/<%= r.id %>?_method=DELETE"
+      method="POST"
+      onsubmit="return confirm('Delete this record?')">
+
+      <button type="submit"
+              class="btn btn-danger btn-sm">
+
+        Del
+
+      </button>
+
+    </form>
+
+  </div>
+
+</td>
         </tr>
         <% }) %>
       </tbody>
@@ -71,4 +96,142 @@
     </form>
   </div>
 </div>
+<% records.forEach(r => { %>
+
+<div class="modal-overlay"
+     id="editModal<%= r.id %>">
+
+  <div class="modal"
+       style="max-width:520px;">
+
+    <div class="modal-header">
+
+      <h3>Edit Timbang Record</h3>
+
+      <button class="modal-close"
+              onclick="closeModal('editModal<%= r.id %>')">
+
+        ✕
+
+      </button>
+
+    </div>
+
+    <form action="/health/operation-timbang/<%= r.id %>/edit"
+          method="POST">
+
+      <div class="modal-body">
+
+        <div class="form-group">
+
+          <label>Resident</label>
+
+          <select name="resident_id"
+                  class="form-select"
+                  required>
+
+            <% residents.forEach(res => { %>
+
+              <option value="<%= res.id %>"
+                <%= res.id == r.resident_id ? 'selected' : '' %>>
+
+                <%= res.full_name %>
+
+              </option>
+
+            <% }) %>
+
+          </select>
+
+        </div>
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label>Weight (kg)</label>
+
+            <input type="number"
+                   step="0.01"
+                   name="weight_kg"
+                   value="<%= r.weight_kg %>"
+                   class="form-control">
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Height (cm)</label>
+
+            <input type="number"
+                   step="0.01"
+                   name="height_cm"
+                   value="<%= r.height_cm %>"
+                   class="form-control">
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Date Measured</label>
+
+            <input type="date"
+                   name="date_measured"
+                   value="<%= r.date_measured ? r.date_measured.toISOString().split('T')[0] : '' %>"
+                   class="form-control">
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Measured By</label>
+
+            <input type="text"
+                   name="measured_by"
+                   value="<%= r.measured_by %>"
+                   class="form-control">
+
+          </div>
+
+          <div class="form-group full">
+
+            <label>Remarks</label>
+
+            <input type="text"
+                   name="remarks"
+                   value="<%= r.remarks %>"
+                   class="form-control">
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button type="button"
+                class="btn btn-secondary"
+                onclick="closeModal('editModal<%= r.id %>')">
+
+          Cancel
+
+        </button>
+
+        <button type="submit"
+                class="btn btn-primary">
+
+          Update Record
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+<% }) %>
 <%- include('../../layout-bottom') %>

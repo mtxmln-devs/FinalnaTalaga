@@ -39,6 +39,53 @@ exports.createImmunization = async (req, res) => {
   res.redirect('/health/immunization');
 };
 
+exports.updateImmunization = async (req, res) => {
+
+  const {
+    resident_id,
+    vaccine,
+    dose,
+    date_given,
+    next_schedule,
+    given_by,
+    remarks
+  } = req.body;
+
+  try {
+
+    await db.query(`
+      UPDATE immunization SET
+        resident_id=?,
+        vaccine=?,
+        dose=?,
+        date_given=?,
+        next_schedule=?,
+        given_by=?,
+        remarks=?
+      WHERE id=?
+    `, [
+      resident_id,
+      vaccine,
+      dose,
+      date_given,
+      next_schedule || null,
+      given_by,
+      remarks,
+      req.params.id
+    ]);
+
+    req.flash('success', 'Immunization record updated.');
+
+  } catch (err) {
+
+    console.log(err);
+    req.flash('error', 'Failed to update record.');
+
+  }
+
+  res.redirect('/health/immunization');
+};
+
 exports.deleteImmunization = async (req, res) => {
   try { await db.query('DELETE FROM immunization WHERE id=?', [req.params.id]); req.flash('success','Record deleted.'); }
   catch (err) { req.flash('error','Failed to delete.'); }
@@ -82,6 +129,63 @@ exports.createTimbang = async (req, res) => {
   res.redirect('/health/operation-timbang');
 };
 
+exports.updateTimbang = async (req, res) => {
+
+  const {
+    resident_id,
+    weight_kg,
+    height_cm,
+    date_measured,
+    measured_by,
+    remarks
+  } = req.body;
+
+  const bmi = (weight_kg / ((height_cm / 100) ** 2)).toFixed(2);
+
+  let status = 'Normal';
+
+  if (bmi < 16) status = 'Severely Underweight';
+  else if (bmi < 18.5) status = 'Underweight';
+  else if (bmi >= 25 && bmi < 30) status = 'Overweight';
+  else if (bmi >= 30) status = 'Obese';
+
+  try {
+
+    await db.query(`
+      UPDATE operation_timbang SET
+        resident_id=?,
+        weight_kg=?,
+        height_cm=?,
+        bmi=?,
+        status=?,
+        date_measured=?,
+        measured_by=?,
+        remarks=?
+      WHERE id=?
+    `, [
+      resident_id,
+      weight_kg,
+      height_cm,
+      bmi,
+      status,
+      date_measured,
+      measured_by,
+      remarks,
+      req.params.id
+    ]);
+
+    req.flash('success', 'Timbang updated.');
+
+  } catch (err) {
+
+    console.log(err);
+    req.flash('error', 'Failed to update.');
+
+  }
+
+  res.redirect('/health/operation-timbang');
+};
+
 exports.deleteTimbang = async (req, res) => {
   try { await db.query('DELETE FROM operation_timbang WHERE id=?', [req.params.id]); req.flash('success','Record deleted.'); }
   catch (err) { req.flash('error','Failed to delete.'); }
@@ -112,6 +216,54 @@ exports.createVitaminA = async (req, res) => {
       [resident_id, dosage, round, date_given || null, given_by, status, year]);
     req.flash('success', 'Vitamin A record added.');
   } catch (err) { req.flash('error', 'Failed to add record.'); }
+  res.redirect('/health/vitamin-a');
+};
+
+exports.updateVitaminA = async (req, res) => {
+
+  const {
+    resident_id,
+    dosage,
+    round,
+    date_given,
+    given_by,
+    year
+  } = req.body;
+
+  const status = date_given ? 'Given' : 'Pending';
+
+  try {
+
+    await db.query(`
+      UPDATE vitamin_a SET
+        resident_id=?,
+        dosage=?,
+        round=?,
+        date_given=?,
+        given_by=?,
+        status=?,
+        year=?
+      WHERE id=?
+    `, [
+      resident_id,
+      dosage,
+      round,
+      date_given || null,
+      given_by,
+      status,
+      year,
+      req.params.id
+    ]);
+
+    req.flash('success', 'Vitamin A updated.');
+
+  } catch (err) {
+
+    console.log(err);
+    req.flash('error', 'Failed to update.');
+
+  }
+
   res.redirect('/health/vitamin-a');
 };
 
@@ -147,6 +299,53 @@ exports.createDeworming = async (req, res) => {
   res.redirect('/health/deworming');
 };
 
+exports.updateDeworming = async (req, res) => {
+
+  const {
+    resident_id,
+    drug,
+    dosage,
+    round,
+    date_given,
+    given_by,
+    adverse_reaction
+  } = req.body;
+
+  try {
+
+    await db.query(`
+      UPDATE deworming SET
+        resident_id=?,
+        drug=?,
+        dosage=?,
+        round=?,
+        date_given=?,
+        given_by=?,
+        adverse_reaction=?
+      WHERE id=?
+    `, [
+      resident_id,
+      drug,
+      dosage,
+      round,
+      date_given,
+      given_by,
+      adverse_reaction || 'None',
+      req.params.id
+    ]);
+
+    req.flash('success', 'Deworming updated.');
+
+  } catch (err) {
+
+    console.log(err);
+    req.flash('error', 'Failed to update.');
+
+  }
+
+  res.redirect('/health/deworming');
+};
+
 exports.deleteDeworming = async (req, res) => {
   try { await db.query('DELETE FROM deworming WHERE id=?', [req.params.id]); req.flash('success','Record deleted.'); }
   catch (err) { req.flash('error','Failed to delete.'); }
@@ -178,6 +377,56 @@ exports.createRiskAssessment = async (req, res) => {
       [resident_id, category, risk_level, risk_factors, date_assessed, next_followup || null, recommendations, assessed_by]);
     req.flash('success', 'Risk assessment recorded.');
   } catch (err) { req.flash('error', 'Failed to add record.'); }
+  res.redirect('/health/risk-assessment');
+};
+
+exports.updateRiskAssessment = async (req, res) => {
+
+  const {
+    resident_id,
+    category,
+    risk_level,
+    risk_factors,
+    date_assessed,
+    next_followup,
+    recommendations,
+    assessed_by
+  } = req.body;
+
+  try {
+
+    await db.query(`
+      UPDATE risk_assessment SET
+        resident_id=?,
+        category=?,
+        risk_level=?,
+        risk_factors=?,
+        date_assessed=?,
+        next_followup=?,
+        recommendations=?,
+        assessed_by=?
+      WHERE id=?
+    `, [
+      resident_id,
+      category,
+      risk_level,
+      risk_factors,
+      date_assessed,
+      next_followup || null,
+      recommendations,
+      assessed_by,
+      req.params.id
+    ]);
+
+    req.flash('success', 'Risk assessment updated.');
+
+  } catch (err) {
+
+    console.log(err);
+    req.flash('error', 'Failed to update.');
+
+  }
+
   res.redirect('/health/risk-assessment');
 };
 
@@ -250,6 +499,56 @@ exports.createFamilyPlanning = async (req, res) => {
       [resident_id, method, method_type, start_date, next_visit || null, given_by, status || 'Active', remarks]);
     req.flash('success', 'Family planning record added.');
   } catch (err) { req.flash('error', 'Failed to add record.'); }
+  res.redirect('/health/family-planning');
+};
+
+exports.updateFamilyPlanning = async (req, res) => {
+
+  const {
+    resident_id,
+    method,
+    method_type,
+    start_date,
+    next_visit,
+    given_by,
+    status,
+    remarks
+  } = req.body;
+
+  try {
+
+    await db.query(`
+      UPDATE family_planning SET
+        resident_id=?,
+        method=?,
+        method_type=?,
+        start_date=?,
+        next_visit=?,
+        given_by=?,
+        status=?,
+        remarks=?
+      WHERE id=?
+    `, [
+      resident_id,
+      method,
+      method_type,
+      start_date,
+      next_visit || null,
+      given_by,
+      status,
+      remarks,
+      req.params.id
+    ]);
+
+    req.flash('success', 'Family planning updated.');
+
+  } catch (err) {
+
+    console.log(err);
+    req.flash('error', 'Failed to update.');
+
+  }
+
   res.redirect('/health/family-planning');
 };
 

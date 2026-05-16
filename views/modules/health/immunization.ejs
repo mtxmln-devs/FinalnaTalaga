@@ -31,10 +31,30 @@
           <td><%= r.next_schedule ? new Date(r.next_schedule).toLocaleDateString('en-PH') : '-' %></td>
           <td><%= r.given_by || '-' %></td>
           <td>
-            <form action="/health/immunization/<%= r.id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this record?')">
-              <button type="submit" class="btn btn-danger btn-sm">Del</button>
-            </form>
-          </td>
+  <div class="flex gap-2">
+
+    <button
+      type="button"
+      class="btn btn-outline btn-sm"
+      onclick="openModal('editModal<%= r.id %>')">
+
+      Edit
+
+    </button>
+
+    <form
+      action="/health/immunization/<%= r.id %>?_method=DELETE"
+      method="POST"
+      onsubmit="return confirm('Delete this record?')">
+
+      <button type="submit" class="btn btn-danger btn-sm">
+        Del
+      </button>
+
+    </form>
+
+  </div>
+</td>
         </tr>
         <% }) %>
       </tbody>
@@ -76,4 +96,127 @@
     </form>
   </div>
 </div>
+<% records.forEach(r => { %>
+<div class="modal-overlay" id="editModal<%= r.id %>">
+
+  <div class="modal" style="max-width:520px;">
+
+    <div class="modal-header">
+      <h3>Edit Immunization Record</h3>
+
+      <button class="modal-close"
+        onclick="closeModal('editModal<%= r.id %>')">
+
+        ✕
+
+      </button>
+    </div>
+    <form action="/health/immunization/<%= r.id %>/edit"
+          method="POST">
+
+      <div class="modal-body">
+
+        <div class="form-group">
+          <label>Resident</label>
+
+          <select name="resident_id"
+                  class="form-select"
+                  required>
+
+            <% residents.forEach(res => { %>
+
+              <option value="<%= res.id %>"
+                <%= res.id == r.resident_id ? 'selected' : '' %>>
+
+                <%= res.full_name %>
+
+              </option>
+
+            <% }) %>
+            </select>
+        </div>
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Vaccine</label>
+
+            <input type="text"
+                   name="vaccine"
+                   value="<%= r.vaccine %>"
+                   class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Dose</label>
+            <input type="text"
+                   name="dose"
+                   value="<%= r.dose %>"
+                   class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Date Given</label>
+
+            <input type="date"
+                   name="date_given"
+                   value="<%= r.date_given ? r.date_given.toISOString().split('T')[0] : '' %>"
+                   class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Next Schedule</label>
+
+            <input type="date"
+                   name="next_schedule"
+                   value="<%= r.next_schedule ? r.next_schedule.toISOString().split('T')[0] : '' %>"
+                   class="form-control">
+          </div>
+
+          <div class="form-group full">
+            <label>Given By</label>
+
+            <input type="text"
+                   name="given_by"
+                   value="<%= r.given_by %>"
+                   class="form-control">
+          </div>
+          <div class="form-group full">
+            <label>Remarks</label>
+
+            <input type="text"
+                   name="remarks"
+                   value="<%= r.remarks %>"
+                   class="form-control">
+          </div>
+
+        </div>
+
+      </div>
+      <div class="modal-footer">
+
+        <button type="button"
+                class="btn btn-secondary"
+                onclick="closeModal('editModal<%= r.id %>')">
+
+          Cancel
+
+        </button>
+
+        <button type="submit"
+                class="btn btn-primary">
+
+          Update Record
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<% }) %>
+    
+    
 <%- include('../../layout-bottom') %>
